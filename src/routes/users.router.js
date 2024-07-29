@@ -1,6 +1,7 @@
 import express from "express";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -49,6 +50,48 @@ router.post('/sign-up', async (req, res) => {
                 authorityName : user.authorityName
             }]
         });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "서버 오류" });
+    }
+
+});
+
+router.post('/login', async (req, res) => {
+
+    const { username, password } = req.body;
+
+    if (!username) {
+        return res.status(400).json({ message: "이름을 입력하세요" });
+    }
+
+    if (!password) {
+        return res.status(400).json({ message: "비밀번호를 입력하세요" });
+    }
+
+    try {
+
+        const user = await prisma.users.findFirst({
+            where: { username }
+        });
+
+        if (!user) {
+            return res.status(400).json({ message: "유저이름이 없습니다."});
+        }
+
+        const passwordMatch= await bcrypt.compare(password, user.password);
+
+        if (!passwordMatch) {
+            return res.status(400).json({message: "비밀번호가 틀립니다."})
+        }
+
+        const accessToken = jwt.sign({ nickname : user.nickname }, 'loginkey', {expiresIn : "12h"})
+
+        return res.status(201).json({
+            token : accessToken
+        });
+
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: "서버 오류" });

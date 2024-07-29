@@ -12,17 +12,12 @@ model Users {
   username   String       @map("username")
   password   String       @unique @map("password")
   nickname   String       @unique @map("nickname")
-  authorities Authorities[]
+  authorityName AuthorityType @map("authority")
 
   @@map("Users")
 }
 
-model Authorities {
-  authorityId   Int     @id @default(autoincrement()) @map("authorityId")
-  authorityName String  @map("authorityName")
-  userId        Int     @map("userId")
-  user          Users   @relation(fields: [userId], references: [userId])
-
-  @@map("Authorities")
-  @@unique([authorityName, userId])
+enum AuthorityType {
+  ROLE_USER
+  ROLE_ADMIN
 }

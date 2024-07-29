@@ -1,8 +1,3 @@
-// prisma/schema.prisma
-
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,11 +8,21 @@ datasource db {
 }
 
 model Users {
-  userId    Int      @id @default(autoincrement()) @map("userId")
-  email     String   @unique @map("email")
-  password  String   @map("password")
-  createdAt DateTime @default(now()) @map("createdAt")
-  updatedAt DateTime @updatedAt @map("updatedAt")
+  userId     Int          @id @default(autoincrement()) @map("userId")
+  username   String       @map("username")
+  password   String       @unique @map("password")
+  nickname   String       @unique @map("nickname")
+  authorities Authorities[]
 
   @@map("Users")
+}
+
+model Authorities {
+  authorityId   Int     @id @default(autoincrement()) @map("authorityId")
+  authorityName String  @map("authorityName")
+  userId        Int     @map("userId")
+  user          Users   @relation(fields: [userId], references: [userId])
+
+  @@map("Authorities")
+  @@unique([authorityName, userId])
 }

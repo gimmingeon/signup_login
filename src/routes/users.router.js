@@ -2,6 +2,9 @@ import express from "express";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv"
+
+dotenv.config();
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -86,10 +89,13 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({message: "비밀번호가 틀립니다."})
         }
 
-        const accessToken = jwt.sign({ nickname : user.nickname }, 'loginkey', {expiresIn : "12h"})
+        const accessToken = jwt.sign({ userId : user.userId }, process.env.ACCESS_TOKEN_SECRET, {expiresIn : "12h"})
+        const refreshToken = jwt.sign({}, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
+
+        res.cookie('refreshToken', refreshToken, {maxAge: 7 * 24 * 60 * 60 * 1000});
 
         return res.status(201).json({
-            token : accessToken
+            accessToken: accessToken
         });
 
     } catch (error) {
